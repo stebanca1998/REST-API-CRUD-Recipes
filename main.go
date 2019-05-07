@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 	_ "github.com/lib/pq"
 )
@@ -215,10 +216,13 @@ func main() {
 
 	router.HandleFunc("/recipes", getRecipes).Methods("GET")
 	router.HandleFunc("/recipe/{idrecipe}", getOneRecipe).Methods("GET", "OPTIONS")
-	router.HandleFunc("/recipe/{idrecipe}", createRecipe).Methods("POST")
-	router.HandleFunc("/recipe/{idrecipe}", updateRecipe).Methods("PUT")
-	router.HandleFunc("/recipe/{idrecipe}", deleteRecipe).Methods("DELETE")
+	router.HandleFunc("/recipe/{idrecipe}", createRecipe).Methods("POST", "OPTIONS")
+	router.HandleFunc("/recipe/{idrecipe}", updateRecipe).Methods("PUT", "OPTIONS")
+	router.HandleFunc("/recipe/{idrecipe}", deleteRecipe).Methods("DELETE", "OPTIONS")
 
-	log.Fatal(http.ListenAndServe(":3000", router))
+	log.Fatal(http.ListenAndServe(":3000", handlers.CORS(
+		handlers.AllowedHeaders([]string{"X-Requested-With", "Content-Type", "Authorization"}),
+		handlers.AllowedMethods([]string{"GET", "POST", "PUT", "HEAD", "OPTIONS", "DELETE"}),
+		handlers.AllowedOrigins([]string{"*"}))(router)))
 
 }
